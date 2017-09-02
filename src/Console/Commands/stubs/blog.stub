@@ -1,0 +1,76 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateBlogTable extends Migration
+{
+    protected $blogCategoriesTable;
+    protected $blogTagsTable;
+    protected $blogsTable;
+    protected $blogBlogTagTable;
+
+    /**
+     * CreateBlogsTable constructor.
+     * @param $blogCategoriesTable
+     * @param $blogsTable
+     */
+    public function __construct()
+    {
+        $this->blogCategoriesTable = config('portal.blog_categories_table');
+        $this->blogTagsTable = config('portal.blog_tags_table');
+        $this->blogsTable = config('portal.blogs_table');
+        $this->blogBlogTagTable = config('portal.blog_blog_tag_table');
+    }
+
+    public function up()
+    {
+        Schema::create($this->blogCategoriesTable, function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->unsignedInteger('parent_id')->nullable();
+            $table->text('description')->nullable();
+            $table->integer('sort')->default(0);
+            $table->string('url_rewrite');
+            $table->string('meta_title')->nullable();
+            $table->string('meta_keywords')->nullable();
+            $table->string('meta_description')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($this->blogTagsTable, function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create($this->blogsTable, function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('title');
+            $table->text('content');
+            $table->unsignedInteger('category_id');
+            $table->string('url_rewrite');
+            $table->boolean('is_active')->default(1);
+            $table->string('meta_title')->nullable();
+            $table->string('meta_keywords')->nullable();
+            $table->string('meta_description')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create($this->blogBlogTagTable, function (Blueprint $table) {
+            $table->unsignedInteger('blog_id');
+            $table->unsignedInteger('tag_id');
+            //$table->foreign('blog_id')->references('id')->on($this->blogsTable)->onDelete('cascade');
+            //$table->foreign('tag_id')->references('id')->on($this->blogTagsTable)->onDelete('cascade');
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists($this->blogBlogTagTable);
+        Schema::dropIfExists($this->blogsTable);
+        Schema::dropIfExists($this->blogTagsTable);
+        Schema::dropIfExists($this->blogCategoriesTable);
+    }
+}
